@@ -42,7 +42,7 @@ logoutBtn?.addEventListener("click", async () => {
   try {
     await signOut(auth);
     alert("Logged out successfully");
-   window.location.href = "/login.html";
+   window.location.href = "./login.html";
 
   } catch (error) {
     console.error(error);
@@ -51,7 +51,7 @@ logoutBtn?.addEventListener("click", async () => {
 
 /* ---------------- BOOK NOW BUTTON ---------------- */
 document.getElementById("bookNowBtn")?.addEventListener("click", () => {
- window.location.href = "/book.html";
+ window.location.href = "./book.html";
 
 });
 
@@ -131,7 +131,7 @@ searchBtn?.addEventListener("click", (event) => {
 
     alert("✅ Hourly Booking Saved!");
 
-    window.location.href = "/slot.html";
+    window.location.href = "./slot.html";
 
   }
 
@@ -156,7 +156,7 @@ searchBtn?.addEventListener("click", (event) => {
     alert("✅ Monthly Package Selected!");
 
     /* ✅ Redirect to Separate Monthly Page */
-    window.location.href = "/monthly-booking.html";
+    window.location.href = "./monthly-booking.html";
 
   }
 });
@@ -182,4 +182,5 @@ themeSelect?.addEventListener("change", (e) => {
   applyTheme(e.target.value);
 
 });
+
 
