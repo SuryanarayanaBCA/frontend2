@@ -11,7 +11,7 @@ const monthlyData = JSON.parse(localStorage.getItem("monthlyData"));
 
 if (!monthlyData) {
   alert("⚠ No Monthly Package Selected!");
-  window.location.href = "../html/dashboard.html";
+  window.location.href = "./dashboard.html";
 }
 
 /* ================================
@@ -41,7 +41,7 @@ let firebaseToken = null;
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert("Session expired. Please login again.");
-    window.location.href = "../html/login.html";
+    window.location.href = "./login.html";
     return;
   }
 
@@ -134,7 +134,7 @@ if (!response.ok) {
     alert("✅ Monthly Booking Confirmed!");
 
     /* ✅ Redirect to Ticket Page */
-    window.location.href = "../html/month-ticket.html";
+    window.location.href = "./month-ticket.html";
 
   } catch (err) {
     console.error("Monthly Booking Error:", err);
@@ -142,3 +142,4 @@ if (!response.ok) {
   }
 
 });
+
