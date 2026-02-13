@@ -20,7 +20,7 @@ const loginForm = document.getElementById("loginForm");
 const errorMsg = document.getElementById("error-msg");
 const googleLoginBtn = document.getElementById("googleLoginBtn");
 const forgotPasswordLink = document.getElementById("forgotPassword");
-
+const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 
@@ -133,3 +133,4 @@ async function handleRedirect(user) {
     errorMsg.textContent = "Login successful, but redirect failed.";
   }
 }
+
