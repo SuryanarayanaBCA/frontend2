@@ -10,7 +10,7 @@ const ticketDataRaw = localStorage.getItem("ticketData");
 
 if (!ticketDataRaw) {
   alert("No ticket data found. Please book again.");
-  window.location.href = "../html/book.html";
+  window.location.href = "./book.html";
 }
 
 const ticketData = JSON.parse(ticketDataRaw);
@@ -47,7 +47,7 @@ const closeBtn = document.getElementById("closeTicketBtn");
 if (closeBtn) {
   closeBtn.onclick = () => {
     localStorage.removeItem("ticketData");
-    window.location.href = "../html/dash.html";
+    window.location.href = "./dash.html";
   };
 }
 
@@ -67,7 +67,7 @@ let firebaseToken = null;
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     alert("Session expired. Please login again.");
-    window.location.href = "../html/login.html";
+    window.location.href = "./login.html";
     return;
   }
 
@@ -133,4 +133,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
 
