@@ -11,7 +11,7 @@ const API_BASE = "http://127.0.0.1:5000/api";
 const bookingsSection = document.getElementById("bookingsSection");
 const customersSection = document.getElementById("customersSection");
 const monthlyBookingsSection = document.getElementById("monthlyBookingsSection");
-
+const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
 const pageTitle = document.getElementById("pageTitle");
 
 /* =======================
@@ -264,3 +264,4 @@ window.logout = async () => {
   await auth.signOut();
   window.location.href = "../html/login.html";
 };
+
