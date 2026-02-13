@@ -2,7 +2,7 @@ const ticket = JSON.parse(localStorage.getItem("monthlyTicket"));
 const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
 if (!ticket) {
   alert("⚠ No Ticket Found!");
-  window.location.href = "../html/dashboard.html";
+  window.location.href = "./dashboard.html";
 }
 
 /* Show Ticket Data */
@@ -27,3 +27,4 @@ document.getElementById("downloadBtn").onclick = () => {
   );
 
 };
+
