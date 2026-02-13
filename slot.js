@@ -1,13 +1,15 @@
-// slot.js (FINAL CLEAN VERSION – BACKEND EMAIL ONLY)
+// slot.js (FINAL CLEAN VERSION – KOYEB BACKEND)
 
 import { auth } from "./firebase.js";
 import {
   onAuthStateChanged,
-  signOut
+  signOut,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+/* ✅ BACKEND BASE URL (KOYEB) */
+const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
 
+document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ slot.js loaded");
 
   const slotsContainer = document.getElementById("slots");
@@ -40,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------------- AUTH ---------------- */
   onAuthStateChanged(auth, (user) => {
-
     if (!user) {
       window.location.replace("./login.html");
       return;
@@ -49,8 +50,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currentUser = user;
 
     userInfo.style.display = "flex";
-    dropdownEmail.textContent = user.email;
-    dropdownUID.textContent = user.uid;
+    dropdownEmail.textContent = user.email || "";
+    dropdownUID.textContent = user.uid || "";
     userAvatar.src = user.photoURL || "./user.png";
 
     userAvatar.onclick = (e) => {
@@ -69,19 +70,20 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------------- LOAD BOOKED SLOTS ---------------- */
   async function loadBookedSlots() {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/booked-slots?date=${bookingData.date}&location=${bookingData.location}`
-      );
+      const date = encodeURIComponent(bookingData.date);
+      const location = encodeURIComponent(bookingData.location);
+
+      const url = `${API_BASE}/api/booked-slots?date=${date}&location=${location}`;
+      const res = await fetch(url);
 
       if (!res.ok) {
-        console.warn("⚠ booked-slots API error");
+        console.warn("⚠ booked-slots API error:", res.status);
         bookedSlots = [];
         return;
       }
 
       const data = await res.json();
       bookedSlots = data.slots || [];
-
     } catch (err) {
       console.error("❌ Error loading booked slots:", err);
       bookedSlots = [];
@@ -102,8 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!isBooked) {
         slot.onclick = () => {
-          document.querySelectorAll(".slot")
-            .forEach(s => s.classList.remove("selected"));
+          document.querySelectorAll(".slot").forEach((s) => s.classList.remove("selected"));
 
           slot.classList.add("selected");
           selectedSlotId = slotId;
@@ -118,7 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------------- CONFIRM BOOKING ---------------- */
   confirmBtn.onclick = async () => {
-
     if (!currentUser || !selectedSlotId) {
       alert("Select a slot first");
       return;
@@ -127,65 +127,74 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmBtn.disabled = true;
     confirmBtn.innerText = "Booking...";
 
-    navigator.geolocation.getCurrentPosition(async (position) => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const token = await currentUser.getIdToken();
 
-      try {
-        const token = await currentUser.getIdToken();
+          const res = await fetch(`${API_BASE}/api/confirm-booking`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              slot: selectedSlotId,
+              vehicle: bookingData.vehicle,
+              date: bookingData.date,
+              location: bookingData.location,
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            }),
+          });
 
-        const res = await fetch("http://localhost:5000/api/confirm-booking", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            slot: selectedSlotId,
-            vehicle: bookingData.vehicle,
-            date: bookingData.date,
-            location: bookingData.location,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          })
-        });
+          // handle non-json responses safely
+          let data = {};
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            data = await res.json();
+          } else {
+            const text = await res.text();
+            throw new Error(`Server returned non-JSON: ${text.slice(0, 120)}`);
+          }
 
-        const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Booking failed");
+          }
 
-        if (!res.ok) {
-          throw new Error(data.error || "Booking failed");
+          console.log("✅ Booking Success:", data);
+
+          /* ---------------- SAVE TICKET DATA ---------------- */
+          localStorage.setItem(
+            "ticketData",
+            JSON.stringify({
+              ticketId: data.ticket_id,
+              email: currentUser.email,
+              vehicle: bookingData.vehicle,
+              slot: selectedSlotId,
+              location: bookingData.location,
+              date: bookingData.date,
+              time: bookingData.time,
+              downloadUrl: data.download_url, // ⚠ backend should return KOYEB url (not localhost)
+            })
+          );
+
+          /* ---------------- REDIRECT TO TICKET PAGE ---------------- */
+          window.location.href = "./ticket.html";
+        } catch (err) {
+          console.error("❌ Booking Error:", err);
+          alert(err.message || "Something went wrong");
+
+          confirmBtn.disabled = false;
+          confirmBtn.innerText = "Book Now";
         }
-
-        console.log("✅ Booking Success:", data);
-
-        
-        /* ---------------- SAVE TICKET DATA ---------------- */
-localStorage.setItem("ticketData", JSON.stringify({
-  ticketId: data.ticket_id,
-  email: currentUser.email,          // ✅ FIXED
-  vehicle: bookingData.vehicle,
-  slot: selectedSlotId,
-  location: bookingData.location,
-  date: bookingData.date,            // ✅ FIXED
-  time: bookingData.time,            // ✅ FIXED
-  downloadUrl: data.download_url
-}));
-
-
-        /* ---------------- REDIRECT TO TICKET PAGE ---------------- */
-        window.location.href = "./ticket.html";
-
-      } catch (err) {
-        console.error("❌ Booking Error:", err);
-        alert(err.message || "Something went wrong");
-
+      },
+      () => {
+        alert("❌ Location permission denied");
         confirmBtn.disabled = false;
         confirmBtn.innerText = "Book Now";
       }
-
-    }, () => {
-      alert("❌ Location permission denied");
-      confirmBtn.disabled = false;
-      confirmBtn.innerText = "Book Now";
-    });
+    );
   };
 
   /* ---------------- INIT ---------------- */
@@ -193,6 +202,4 @@ localStorage.setItem("ticketData", JSON.stringify({
     await loadBookedSlots();
     renderSlots();
   })();
-
 });
-
