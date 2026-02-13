@@ -40,7 +40,7 @@ async function register(event) {
       body: JSON.stringify({ name, email })
     });
 
-    window.location.href = "login.html";
+    window.location.href = "./login.html";
 
   } catch (err) {
     errorMsg.textContent = err.message;
@@ -48,4 +48,5 @@ async function register(event) {
 }
 
 window.register = register;
+
 
