@@ -1,6 +1,7 @@
 import { auth } from "./firebase.js";
 import { onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
 
 /* =====================================================
    LOAD TICKET DATA SAFELY
@@ -132,3 +133,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
