@@ -15,6 +15,7 @@ function setupAccountAvatar(user) {
   const dropdownEmail = document.getElementById("dropdownEmail");
   const dropdownUID = document.getElementById("dropdownUID");
   const logoutBtn = document.getElementById("logoutBtn");
+  const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
 
   userInfo.style.display = "flex";
   dropdownEmail.textContent = user.email;
@@ -70,3 +71,4 @@ checkBtn.addEventListener("click", (e) => {
 
   window.location.href = "../html/slot.html";
 });
+
