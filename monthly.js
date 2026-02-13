@@ -21,7 +21,7 @@ if (!monthlyData) {
 const locationText = document.getElementById("locationText");
 const packageText = document.getElementById("packageText");
 const priceText = document.getElementById("priceText");
-
+const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
 let price = 0;
 
 if (monthlyData.months == 1) price = 2000;
@@ -140,4 +140,5 @@ if (!response.ok) {
     console.error("Monthly Booking Error:", err);
     alert("❌ Server Error! Try Again.");
   }
+
 });
