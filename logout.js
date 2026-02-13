@@ -5,6 +5,7 @@ import { signOut } from
 logoutBtn.addEventListener("click", async (e) => {
   e.preventDefault();
   await signOut(auth);
-  window.location.href = "login.html";
+  window.location.href = "./login.html";
 });
+
 
