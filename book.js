@@ -1,4 +1,4 @@
-import { auth } from "../js/firebase.js";
+import { auth } from "./firebase.js";
 import {
   onAuthStateChanged,
   signOut
@@ -20,7 +20,7 @@ function setupAccountAvatar(user) {
   userInfo.style.display = "flex";
   dropdownEmail.textContent = user.email;
   dropdownUID.textContent = user.uid;
-  avatar.src = user.photoURL || "../html/user.png";
+  avatar.src = user.photoURL || "./user.png";
 
   avatar.onclick = (e) => {
     e.stopPropagation();
@@ -33,14 +33,14 @@ function setupAccountAvatar(user) {
 
   logoutBtn.onclick = async () => {
     await signOut(auth);
-    window.location.href = "../html/login.html";
+    window.location.href = "./login.html";
   };
 }
 
 /* ---------------- AUTH CHECK ---------------- */
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href = "../html/login.html";
+    window.location.href = "./login.html";
     return;
   }
 
@@ -69,6 +69,7 @@ checkBtn.addEventListener("click", (e) => {
     email: auth.currentUser.email
   }));
 
-  window.location.href = "../html/slot.html";
+  window.location.href = "./slot.html";
 });
+
 
