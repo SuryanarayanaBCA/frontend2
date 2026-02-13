@@ -1,6 +1,6 @@
 // slot.js (FINAL CLEAN VERSION – BACKEND EMAIL ONLY)
 
-import { auth } from "../js/firebase.js";
+import { auth } from "./firebase.js";
 import {
   onAuthStateChanged,
   signOut
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!bookingDataRaw) {
     alert("❌ Booking data missing");
-    window.location.replace("../html/book.html");
+    window.location.replace("./book.html");
     return;
   }
 
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   onAuthStateChanged(auth, (user) => {
 
     if (!user) {
-      window.location.replace("../html/login.html");
+      window.location.replace("./login.html");
       return;
     }
 
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
     userInfo.style.display = "flex";
     dropdownEmail.textContent = user.email;
     dropdownUID.textContent = user.uid;
-    userAvatar.src = user.photoURL || "../html/user.png";
+    userAvatar.src = user.photoURL || "./user.png";
 
     userAvatar.onclick = (e) => {
       e.stopPropagation();
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     logoutBtn.onclick = async () => {
       await signOut(auth);
-      window.location.replace("../html/login.html");
+      window.location.replace("./login.html");
     };
   });
 
@@ -171,7 +171,7 @@ localStorage.setItem("ticketData", JSON.stringify({
 
 
         /* ---------------- REDIRECT TO TICKET PAGE ---------------- */
-        window.location.href = "../html/ticket.html";
+        window.location.href = "./ticket.html";
 
       } catch (err) {
         console.error("❌ Booking Error:", err);
@@ -195,3 +195,4 @@ localStorage.setItem("ticketData", JSON.stringify({
   })();
 
 });
+
