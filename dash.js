@@ -8,7 +8,7 @@ import {
 const accountBox = document.getElementById("accountBox");
 const authButtons = document.getElementById("authButtons");
 const avatar = document.getElementById("avatar");
-
+const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
 const userEmail = document.getElementById("userEmail");
 const logoutBtn = document.getElementById("logoutBtn");
 
@@ -176,4 +176,5 @@ if (themeSelect) themeSelect.value = savedTheme;
 
 themeSelect?.addEventListener("change", (e) => {
   applyTheme(e.target.value);
+
 });
