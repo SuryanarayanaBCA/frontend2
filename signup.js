@@ -12,6 +12,8 @@ async function register(event) {
   const password = document.getElementById("password").value;
   const confirmPassword = document.getElementById("confirmPassword").value;
   const errorMsg = document.getElementById("error-msg");
+  const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
+
 
   if (!name) {
     errorMsg.textContent = "Name is required";
@@ -46,3 +48,4 @@ async function register(event) {
 }
 
 window.register = register;
+
