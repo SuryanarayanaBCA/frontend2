@@ -124,13 +124,14 @@ async function handleRedirect(user) {
     localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
 
     if (isAdmin) {
-      window.location.replace("../html/admin.html");
+      window.location.replace("./admin.html");
     } else {
-      window.location.replace("../html/dash.html");
+      window.location.replace("./dash.html");
     }
   } catch (err) {
     console.error("Redirect handling error:", err);
     errorMsg.textContent = "Login successful, but redirect failed.";
   }
 }
+
 
