@@ -1,206 +1,143 @@
-// slot.js (FINAL CLEAN VERSION – KOYEB BACKEND)
+// login.js (FULL CORRECTED – MOBILE + DESKTOP FRIENDLY, REDIRECT ONLY)
 
 import { auth } from "./firebase.js";
 import {
-  onAuthStateChanged,
-  signOut,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+  sendPasswordResetEmail,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* ✅ BACKEND BASE URL (KOYEB) */
-const API_BASE = "https://wooden-rachael-individual12-647a1f57.koyeb.app";
+console.log("✅ login.js loaded");
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ slot.js loaded");
+/* ---------- CONFIG ---------- */
+const ADMIN_EMAILS = ["admin@system.com"];
 
-  const slotsContainer = document.getElementById("slots");
-  const selectedSlotText = document.getElementById("selectedSlot");
-  const confirmBtn = document.getElementById("confirmBtn");
+/* ---------- ELEMENTS ---------- */
+const loginForm = document.getElementById("loginForm");
+const errorMsg = document.getElementById("error-msg");
+const googleLoginBtn = document.getElementById("googleLoginBtn");
+const forgotPasswordLink = document.getElementById("forgotPassword");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
 
-  const userInfo = document.getElementById("userInfo");
-  const userAvatar = document.getElementById("userAvatar");
-  const dropdown = document.getElementById("accountDropdown");
-  const dropdownEmail = document.getElementById("dropdownEmail");
-  const dropdownUID = document.getElementById("dropdownUID");
-  const logoutBtn = document.getElementById("logoutBtn");
+/* ---------- SMALL HELPER ---------- */
+function showError(msg) {
+  if (!errorMsg) return;
+  errorMsg.style.color = "red";
+  errorMsg.textContent = msg || "";
+}
 
-  let currentUser = null;
-  let selectedSlotId = null;
-  let bookedSlots = [];
+function showSuccess(msg) {
+  if (!errorMsg) return;
+  errorMsg.style.color = "green";
+  errorMsg.textContent = msg || "";
+}
 
-  confirmBtn.disabled = true;
+/* ---------- ADMIN / USER REDIRECT ---------- */
+async function handleRedirect(user) {
+  try {
+    const email = (user?.email || "").toLowerCase().trim();
+    const isAdmin = ADMIN_EMAILS.includes(email);
 
-  /* ---------------- BOOKING DATA ---------------- */
-  const bookingDataRaw = localStorage.getItem("bookingData");
+    localStorage.setItem("isAdmin", isAdmin ? "true" : "false");
 
-  if (!bookingDataRaw) {
-    alert("❌ Booking data missing");
-    window.location.replace("./book.html");
-    return;
-  }
-
-  const bookingData = JSON.parse(bookingDataRaw);
-
-  /* ---------------- AUTH ---------------- */
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      window.location.replace("./login.html");
-      return;
+    if (isAdmin) {
+      window.location.replace("./admin.html");
+    } else {
+      window.location.replace("./dash.html");
     }
+  } catch (err) {
+    console.error("Redirect handling error:", err);
+    showError("Login successful, but redirect failed.");
+  }
+}
 
-    currentUser = user;
+/* ---------- EMAIL LOGIN ---------- */
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showError("");
 
-    userInfo.style.display = "flex";
-    dropdownEmail.textContent = user.email || "";
-    dropdownUID.textContent = user.uid || "";
-    userAvatar.src = user.photoURL || "./user.png";
-
-    userAvatar.onclick = (e) => {
-      e.stopPropagation();
-      dropdown.classList.toggle("hidden");
-    };
-
-    document.onclick = () => dropdown.classList.add("hidden");
-
-    logoutBtn.onclick = async () => {
-      await signOut(auth);
-      window.location.replace("./login.html");
-    };
-  });
-
-  /* ---------------- LOAD BOOKED SLOTS ---------------- */
-  async function loadBookedSlots() {
     try {
-      const date = encodeURIComponent(bookingData.date);
-      const location = encodeURIComponent(bookingData.location);
+      const userCred = await signInWithEmailAndPassword(
+        auth,
+        emailInput.value.trim(),
+        passwordInput.value
+      );
 
-      const url = `${API_BASE}/api/booked-slots?date=${date}&location=${location}`;
-      const res = await fetch(url);
-
-      if (!res.ok) {
-        console.warn("⚠ booked-slots API error:", res.status);
-        bookedSlots = [];
-        return;
-      }
-
-      const data = await res.json();
-      bookedSlots = data.slots || [];
+      await handleRedirect(userCred.user);
     } catch (err) {
-      console.error("❌ Error loading booked slots:", err);
-      bookedSlots = [];
-    }
-  }
-
-  /* ---------------- RENDER SLOTS ---------------- */
-  function renderSlots() {
-    slotsContainer.innerHTML = "";
-
-    for (let i = 1; i <= 40; i++) {
-      const slotId = `S${i}`;
-      const isBooked = bookedSlots.includes(slotId);
-
-      const slot = document.createElement("div");
-      slot.className = `slot ${isBooked ? "booked" : ""}`;
-      slot.innerHTML = `<strong>${slotId}</strong>`;
-
-      if (!isBooked) {
-        slot.onclick = () => {
-          document.querySelectorAll(".slot").forEach((s) => s.classList.remove("selected"));
-
-          slot.classList.add("selected");
-          selectedSlotId = slotId;
-          selectedSlotText.textContent = slotId;
-          confirmBtn.disabled = false;
-        };
+      console.error("Email login error:", err);
+      // show a little more useful message
+      if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
+        showError("Invalid email or password.");
+      } else if (err.code === "auth/invalid-email") {
+        showError("Invalid email format.");
+      } else {
+        showError(err.code || "Login failed.");
       }
-
-      slotsContainer.appendChild(slot);
     }
-  }
+  });
+}
 
-  /* ---------------- CONFIRM BOOKING ---------------- */
-  confirmBtn.onclick = async () => {
-    if (!currentUser || !selectedSlotId) {
-      alert("Select a slot first");
+/* ---------- FORGOT PASSWORD ---------- */
+if (forgotPasswordLink) {
+  forgotPasswordLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+    showError("");
+
+    const email = emailInput.value.trim();
+    if (!email) {
+      showError("Please enter your email to reset password.");
       return;
     }
 
-    confirmBtn.disabled = true;
-    confirmBtn.innerText = "Booking...";
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const token = await currentUser.getIdToken();
-
-          const res = await fetch(`${API_BASE}/api/confirm-booking`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              slot: selectedSlotId,
-              vehicle: bookingData.vehicle,
-              date: bookingData.date,
-              location: bookingData.location,
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            }),
-          });
-
-          // handle non-json responses safely
-          let data = {};
-          const contentType = res.headers.get("content-type") || "";
-          if (contentType.includes("application/json")) {
-            data = await res.json();
-          } else {
-            const text = await res.text();
-            throw new Error(`Server returned non-JSON: ${text.slice(0, 120)}`);
-          }
-
-          if (!res.ok) {
-            throw new Error(data.error || "Booking failed");
-          }
-
-          console.log("✅ Booking Success:", data);
-
-          /* ---------------- SAVE TICKET DATA ---------------- */
-          localStorage.setItem(
-            "ticketData",
-            JSON.stringify({
-              ticketId: data.ticket_id,
-              email: currentUser.email,
-              vehicle: bookingData.vehicle,
-              slot: selectedSlotId,
-              location: bookingData.location,
-              date: bookingData.date,
-              time: bookingData.time,
-              downloadUrl: data.download_url, // ⚠ backend should return KOYEB url (not localhost)
-            })
-          );
-
-          /* ---------------- REDIRECT TO TICKET PAGE ---------------- */
-          window.location.href = "./ticket.html";
-        } catch (err) {
-          console.error("❌ Booking Error:", err);
-          alert(err.message || "Something went wrong");
-
-          confirmBtn.disabled = false;
-          confirmBtn.innerText = "Book Now";
-        }
-      },
-      () => {
-        alert("❌ Location permission denied");
-        confirmBtn.disabled = false;
-        confirmBtn.innerText = "Book Now";
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showSuccess("Password reset link sent to your email.");
+    } catch (err) {
+      console.error("Password reset error:", err);
+      if (err.code === "auth/user-not-found") {
+        showError("No account found with this email.");
+      } else if (err.code === "auth/invalid-email") {
+        showError("Invalid email address.");
+      } else {
+        showError(err.code || "Failed to send reset email.");
       }
-    );
-  };
+    }
+  });
+}
 
-  /* ---------------- INIT ---------------- */
-  (async () => {
-    await loadBookedSlots();
-    renderSlots();
-  })();
+/* ---------- GOOGLE LOGIN (REDIRECT ONLY – WORKS ON MOBILE) ---------- */
+const provider = new GoogleAuthProvider();
+
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener("click", async () => {
+    showError("");
+    try {
+      // ✅ Use redirect for BOTH mobile & desktop (most reliable)
+      await signInWithRedirect(auth, provider);
+    } catch (err) {
+      console.error("Google login failed:", err);
+      showError(err.code || "Google login failed.");
+    }
+  });
+}
+
+/* ---------- HANDLE GOOGLE REDIRECT RESULT ---------- */
+window.addEventListener("load", async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      await handleRedirect(result.user);
+    }
+  } catch (err) {
+    console.error("Redirect login error:", err);
+    // ignore "no event" (normal if user didn't click google login)
+    if (err.code && err.code !== "auth/no-auth-event") {
+      showError(err.code || "Google login failed.");
+    }
+  }
 });
-
