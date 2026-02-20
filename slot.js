@@ -7,7 +7,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 /* ✅ BACKEND BASE URL (KOYEB) */
-const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
+const API_BASE = "https://wooden-rachael-individual12-647a1f57.koyeb.app";
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ slot.js loaded");
@@ -203,3 +203,4 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSlots();
   })();
 });
+
