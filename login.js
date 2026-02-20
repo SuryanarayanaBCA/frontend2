@@ -79,23 +79,17 @@ if (forgotPasswordLink) {
 }
 
 /* ---------- GOOGLE LOGIN ---------- */
+/* ---------- GOOGLE LOGIN ---------- */
 const provider = new GoogleAuthProvider();
 
 if (googleLoginBtn) {
   googleLoginBtn.addEventListener("click", async () => {
-    errorMsg.style.color = "red";
     errorMsg.textContent = "";
-
     try {
-      if (window.innerWidth > 768) {
-        const result = await signInWithPopup(auth, provider);
-        await handleRedirect(result.user);
-      } else {
-        await signInWithRedirect(auth, provider);
-      }
+      await signInWithRedirect(auth, provider);
     } catch (err) {
       console.error("Google login failed:", err);
-      errorMsg.textContent = "Google login failed.";
+      errorMsg.textContent = err.code || "Google login failed.";
     }
   });
 }
@@ -133,5 +127,6 @@ async function handleRedirect(user) {
     errorMsg.textContent = "Login successful, but redirect failed.";
   }
 }
+
 
 
