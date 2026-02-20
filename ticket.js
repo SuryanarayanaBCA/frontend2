@@ -1,11 +1,10 @@
 import { auth } from "./firebase.js";
-import { onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-const API_BASE = "https://wooden-rachael-individual12-647af1s7.koyeb.app";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* =====================================================
-   LOAD TICKET DATA SAFELY
-===================================================== */
+// ✅ Correct KOYEB backend
+const API_BASE = "https://wooden-rachael-individual12-647a1f57.koyeb.app";
+
+/* ---------------- LOAD TICKET DATA ---------------- */
 const ticketDataRaw = localStorage.getItem("ticketData");
 
 if (!ticketDataRaw) {
@@ -15,14 +14,10 @@ if (!ticketDataRaw) {
 
 const ticketData = JSON.parse(ticketDataRaw);
 
-/* =====================================================
-   FILL TICKET SAFELY
-===================================================== */
+/* ---------------- FILL TICKET ---------------- */
 function setText(id, value) {
-  const element = document.getElementById(id);
-  if (element) {
-    element.innerText = value || "-";
-  }
+  const el = document.getElementById(id);
+  if (el) el.innerText = value || "-";
 }
 
 setText("ticketId", "#" + (ticketData.ticketId || ""));
@@ -32,17 +27,11 @@ setText("slotNo", ticketData.slot);
 setText("date", ticketData.date);
 setText("time", ticketData.time);
 
-/* =====================================================
-   SHOW MODAL
-===================================================== */
+/* ---------------- SHOW MODAL ---------------- */
 const modal = document.getElementById("ticketModal");
-if (modal) {
-  modal.style.display = "flex";
-}
+if (modal) modal.style.display = "flex";
 
-/* =====================================================
-   CLOSE BUTTON
-===================================================== */
+/* ---------------- CLOSE ---------------- */
 const closeBtn = document.getElementById("closeTicketBtn");
 if (closeBtn) {
   closeBtn.onclick = () => {
@@ -51,17 +40,11 @@ if (closeBtn) {
   };
 }
 
-/* =====================================================
-   PRINT
-===================================================== */
+/* ---------------- PRINT ---------------- */
 const printBtn = document.getElementById("printBtn");
-if (printBtn) {
-  printBtn.onclick = () => window.print();
-}
+if (printBtn) printBtn.onclick = () => window.print();
 
-/* =====================================================
-   FIREBASE AUTH CHECK
-===================================================== */
+/* ---------------- AUTH TOKEN ---------------- */
 let firebaseToken = null;
 
 onAuthStateChanged(auth, async (user) => {
@@ -70,13 +53,10 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = "./login.html";
     return;
   }
-
   firebaseToken = await user.getIdToken();
 });
 
-/* =====================================================
-   DOWNLOAD PDF
-===================================================== */
+/* ---------------- DOWNLOAD PDF ---------------- */
 const downloadBtn = document.getElementById("downloadPdfBtn");
 
 if (downloadBtn) {
@@ -87,16 +67,21 @@ if (downloadBtn) {
         return;
       }
 
+      if (!firebaseToken) {
+        alert("Please wait... login token loading");
+        return;
+      }
+
+      // ✅ use KOYEB not localhost
       const res = await fetch(
-        `http://localhost:5000/api/ticket-pdf/${ticketData.ticketId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${firebaseToken}`
-          }
-        }
+        `${API_BASE}/api/ticket-pdf/${ticketData.ticketId}`,
+        { headers: { Authorization: `Bearer ${firebaseToken}` } }
       );
 
-      if (!res.ok) throw new Error("PDF generation failed");
+      if (!res.ok) {
+        const txt = await res.text();
+        throw new Error(`PDF failed: ${res.status} ${txt.slice(0, 120)}`);
+      }
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -107,31 +92,23 @@ if (downloadBtn) {
       document.body.appendChild(a);
       a.click();
       a.remove();
-
       window.URL.revokeObjectURL(url);
 
     } catch (err) {
       console.error("PDF download error:", err);
-      alert("PDF download failed");
+      alert(err.message || "PDF download failed");
     }
   };
 }
 
-/* =====================================================
-   GENERATE QR CODE
-===================================================== */
+/* ---------------- QR CODE ---------------- */
 document.addEventListener("DOMContentLoaded", () => {
   const qrContainer = document.getElementById("qrcode");
 
-  if (qrContainer && window.QRCode && ticketData.ticketId) {
-    const scanUrl = `http://localhost:5000/ticket/${ticketData.ticketId}`;
+  // ✅ point QR to your KOYEB verify route or a frontend page
+  const scanUrl = `${API_BASE}/ticket/${ticketData.ticketId}`;
 
-    new QRCode(qrContainer, {
-      text: scanUrl,
-      width: 150,
-      height: 150
-    });
+  if (qrContainer && window.QRCode && ticketData.ticketId) {
+    new QRCode(qrContainer, { text: scanUrl, width: 150, height: 150 });
   }
 });
-
-
